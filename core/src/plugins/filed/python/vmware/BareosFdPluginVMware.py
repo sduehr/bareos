@@ -100,6 +100,7 @@ class BareosFdPluginVMware(BareosFdPluginBaseclass.BareosFdPluginBaseclass):
             "vadp_dumper_verbose",
             "verifyssl",
             "quiesce",
+            "cleanup_tmp_files",
         ]
         self.utf8_options = ["vmname", "folder"]
         self.config = None
@@ -1757,6 +1758,14 @@ class BareosVADPWrapper(object):
         """
         Cleanup temporary files
         """
+
+        if self.options.get("cleanup_tmp_files") == "no":
+            bareosfd.DebugMessage(
+                100,
+                "end_dumper() not deleting temporary file, cleanup_tmp_files is set to no\n"
+            )
+            return True
+
 
         # delete temporary json file
         if not self.cbt_json_local_file_path:
