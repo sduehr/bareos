@@ -303,7 +303,7 @@ class VmConfigInfoToSpec(object):
         elif device["backing"]["_vimtype"] == "vim.vm.device.VirtualCdrom.IsoBackingInfo":
             add_device.backing = vim.vm.device.VirtualCdrom.IsoBackingInfo()
             add_device.backing.backingObjectId = device["backing"]["backingObjectId"]
-            add_device.backing.datastore = device["backing"]["datastore"]
+            add_device.backing.datastore = vim.Datastore(device["backing"]["datastore"])
             add_device.backing.fileName = device["backing"]["fileName"]
         elif device["backing"]["_vimtype"] == "vim.vm.device.VirtualCdrom.PassthroughBackingInfo":
             add_device.backing = vim.vm.device.VirtualCdrom.PassthroughBackingInfo()
@@ -326,8 +326,9 @@ class VmConfigInfoToSpec(object):
 
         # TODO: Looks like negative values must not be used for default devices,
         # the second VirtualIDEController seems to have key 201, but is that always the case?
+        # TODO: Same for VirtualCdrom, getting error "The device '1' is referring to a nonexisting controller '-200'."
         add_device.controllerKey = device["controllerKey"]
-        if device["controllerKey"] != 201:
+        if device["controllerKey"] not in [200,201]:
             add_device.controllerKey = device["controllerKey"] * -1
         add_device.unitNumber = device["unitNumber"]
 

@@ -101,6 +101,7 @@ class BareosFdPluginVMware(BareosFdPluginBaseclass.BareosFdPluginBaseclass):
             "verifyssl",
             "quiesce",
             "cleanup_tmp_files",
+            "restore_vm_moref",
         ]
         self.utf8_options = ["vmname", "folder"]
         self.config = None
@@ -419,6 +420,8 @@ class BareosFdPluginVMware(BareosFdPluginBaseclass.BareosFdPluginBaseclass):
         # be set to diskPathRoot
         cbt_data = self.vadp.restore_objects_by_objectname[objectname]["data"]
         cbt_data["DiskParams"]["diskPath"] = cbt_data["DiskParams"]["diskPathRoot"]
+        if self.options.get("restore_vm_moref"):
+            cbt_data["ConnParams"]["VmMoRef"] = "moref=" + self.options["restore_vm_moref"]
         self.vadp.writeStringToFile(json_filename, json.dumps(cbt_data))
         self.cbt_json_local_file_path = json_filename
 
