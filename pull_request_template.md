@@ -19,9 +19,8 @@ If you have any questions or problems, please give a comment in the PR.
 ##### General
 - [ ] PR name is meaningful
 - [ ] Purpose of the PR is understood
-- [ ] Separate commit for this PR in the CHANGELOG.md, PR number referenced is same
 - [ ] Commit descriptions are understandable and well formatted
-- [ ] If backport: add original PR number and target branch at top of this file: **Backport of PR#000 to bareos-2x**
+- [ ] If backport: add original PR number and target branch at top of this file: **Backport of PR #0000 to bareos-2x**
 
 ##### Source code quality
 
@@ -38,3 +37,9 @@ If you have any questions or problems, please give a comment in the PR.
 - [ ] The choice of the type of test (unit test or systemtest) is reasonable
 - [ ] Testname matches exactly what is being tested
 - [ ] On a fail, output of the test leads quickly to the origin of the fault
+
+##### CHANGELOG.md
+- [ ] Separate commit for this PR in the CHANGELOG.md
+- [ ] The changelog entries refers to this PR (verify the number)
+- [ ] New changelog entries are added at the top of a section.
+- [ ] Commit message is "updated CHANGELOG.md" or "updated CHANGELOG.md for PR #0000" (replace 0000 by the number of the current PR)
