@@ -15,7 +15,7 @@ branch was later on the base of Bareos and since then was enriched by a
 lot of new features.
 
 This documentation also bases on the original Bacula documentation, it
-is technically also a fork of the documenation created following the
+is technically also a fork of the documentation created following the
 rules of the GNU Free Documentation License.
 
 Original author of Bacula and it’s documentation is Kern Sibbald. We
@@ -129,6 +129,17 @@ The configuration file will be automatically found and used by clang-format:
 
   #format one sourcecode file in-place
   clang-format -i ./core/src/dird/dird_conf.cc
+
+The Bareos has bundled its automatic sourcecode formatting into one tool: ``bareos-check-sources``.
+https://github.com/bareos/bareos/blob/master/devtools/pip-tools/README.md describes how to use it. In short:
+
+.. code-block:: shell-session
+
+   $ cd devtools/pip-tools
+   $ pipenv sync
+   $ pipenv shell
+   (pip-tools)$ bareos-check-sources --since-merge --diff
+   (pip-tools)$ bareos-check-sources --since-merge --modify
 
 
 Formatting exceptions
