@@ -339,7 +339,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
   include_directories(/usr/local/include)
   link_directories(/usr/local/lib)
   link_libraries(intl)
-  check_cxx_compiler_flag(-Wunused-but-set-variable compiler_will_warn_of_unused_but_set_variable)
+  check_cxx_compiler_flag(
+    -Wunused-but-set-variable compiler_will_warn_of_unused_but_set_variable
+  )
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
@@ -761,6 +763,10 @@ list(APPEND PLUGINS python-ovirt)
 
 if(VIXDISKLIB_FOUND)
   list(APPEND PLUGINS python-vmware)
+endif()
+
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/src/plugins/filed/python/qumolo)
+  list(APPEND PLUGINS python-qumolo)
 endif()
 
 if(${HAVE_GLUSTERFS})
