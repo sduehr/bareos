@@ -205,9 +205,9 @@ set(PYFILES
     libcloud/bareos-fd-libcloud.py
     libcloud/BareosFdPluginLibcloud.py
 )
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/qumolo)
-  list(APPEND PYFILES qumolo/BareosFdPluginQumulo.py)
-  list(APPEND PYFILES qumolo/bareos-fd-qumulo.py)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/qumulo)
+  list(APPEND PYFILES qumulo/BareosFdPluginQumulo.py)
+  list(APPEND PYFILES qumulo/bareos-fd-qumulo.py)
 endif()
 
 install(
