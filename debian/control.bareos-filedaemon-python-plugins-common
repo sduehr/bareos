@@ -80,7 +80,7 @@ Description: Backup Archiving Recovery Open Sourced - contributed File Daemon pl
  .
  This package provides additional File Daemon Python plugins, not part of the Bareos project.
 
-Package:        bareos-filedaemon-qumolo-python-plugin
+Package:        bareos-filedaemon-qumulo-python-plugin
 Architecture:   any
 Section:        python
 Pre-Depends:    debconf (>= 1.4.30) | debconf-2.0
