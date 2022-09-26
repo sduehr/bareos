@@ -1,3 +1,4 @@
-[credentials]
+[general]
+host = 192.168.76.20
 username = @qumulo_user@
 password = @qumulo_password@
