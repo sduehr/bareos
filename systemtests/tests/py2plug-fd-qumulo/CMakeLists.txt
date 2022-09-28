@@ -17,12 +17,18 @@
 #   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 #   02110-1301, USA.
 
-if(TARGET python-fd AND qumulo_host)
+check_pymodule_available(2 concurrent.futures
+)# sets PYMODULE_2_CONCURRENT.FUTURES_FOUND
+
+if(TARGET python-fd
+   AND qumulo_host
+   AND PYMODULE_2_CONCURRENT.FUTURES_FOUND
+)
   create_systemtest(${SYSTEMTEST_PREFIX} "py2plug-fd-qumulo")
 else()
   create_systemtest(
     ${SYSTEMTEST_PREFIX} "py2plug-fd-qumulo" DISABLED COMMENT
-    "no python-fd or qumulo_host not set"
+    "no python-fd or qumulo_host not set or pymodule futures not found"
   )
 endif()
 
