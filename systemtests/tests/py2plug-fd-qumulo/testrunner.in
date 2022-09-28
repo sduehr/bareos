@@ -9,6 +9,11 @@ set -u
 TestName="$(basename "$(pwd)")"
 export TestName
 
+echo "etc/bareos/qumulo-plugin.ini:"
+echo "---------------------"
+sed 's/password.*/password = ***/g' <  etc/bareos/qumulo-plugin.ini
+echo "---------------------"
+
 QUMULO_MOUNTPOINT=/qumulo/nfs
 QUMULO_SHARE=bareos
 QUMULO_SHARE_FILESYSTEM_PATH=/bareos/share1
