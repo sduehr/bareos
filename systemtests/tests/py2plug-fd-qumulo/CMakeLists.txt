@@ -29,8 +29,7 @@ if(TARGET python-fd
 else()
   create_systemtest(
     ${SYSTEMTEST_PREFIX} "py2plug-fd-qumulo" DISABLED COMMENT
-    "no python-fd or qumulo_host not set or pymodule futures not found"
-  )
+    "no python-fd or qumulo_host not set or pymodule futures of configparser missing"
 endif()
 
 if(TARGET python3-fd AND qumulo_host)
