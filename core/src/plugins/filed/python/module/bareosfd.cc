@@ -706,10 +706,11 @@ static inline PyRestorePacket* NativeToPyRestorePacket(struct restore_pkt* rp)
     pRestorePacket->uid = rp->uid;
     pRestorePacket->statp = (PyObject*)NativeToPyStatPacket(&rp->statp);
     pRestorePacket->attrEx = rp->attrEx;
-    pRestorePacket->ofname = rp->ofname;
-    pRestorePacket->olname = rp->olname;
-    pRestorePacket->where = rp->where;
-    pRestorePacket->RegexWhere = rp->RegexWhere;
+    pRestorePacket->ofname = PyBytes_FromString(rp->ofname ? rp->ofname : "");
+    pRestorePacket->olname = PyBytes_FromString(rp->olname ? rp->olname : "");
+    pRestorePacket->where = PyBytes_FromString(rp->where ? rp->where : "");
+    pRestorePacket->RegexWhere
+        = PyBytes_FromString(rp->RegexWhere ? rp->RegexWhere : "");
     pRestorePacket->replace = rp->replace;
     pRestorePacket->create_status = rp->create_status;
   }
@@ -2073,10 +2074,11 @@ static PyObject* PyRestorePacket_repr(PyRestorePacket* self)
        "create_status=%d)",
        self->stream, self->data_stream, self->type, self->file_index,
        self->LinkFI, self->uid, PyGetStringValue(stat_repr), self->attrEx,
-       self->ofname, self->olname, self->where, self->RegexWhere, self->replace,
-       self->create_status);
+       PyBytes_AsString(self->ofname), PyBytes_AsString(self->olname),
+       PyBytes_AsString(self->where), PyBytes_AsString(self->RegexWhere),
+       self->replace, self->create_status);
 
-  s = PyUnicode_FromString(buf.c_str());
+  s = PyBytes_FromString(buf.c_str());
   Py_DECREF(stat_repr);
 
   return s;
@@ -2110,7 +2112,7 @@ static int PyRestorePacket_init(PyRestorePacket* self,
   self->create_status = 0;
 
   if (!PyArg_ParseTupleAndKeywords(
-          args, kwds, "|iiiiiIosssssii", kwlist, &self->stream,
+          args, kwds, "|iiiiiIosSSSSii", kwlist, &self->stream,
           &self->data_stream, &self->type, &self->file_index, &self->LinkFI,
           &self->uid, &self->statp, &self->attrEx, &self->ofname, &self->olname,
           &self->where, &self->RegexWhere, &self->replace,

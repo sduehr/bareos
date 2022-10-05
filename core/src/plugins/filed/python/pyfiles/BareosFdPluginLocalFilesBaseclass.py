@@ -149,14 +149,14 @@ class BareosFdPluginLocalFilesBaseclass(BareosFdPluginBaseclass):  # noqa
         Adapt this in your derived class, if you need modifications for
         virtual files or similar
         """
-        bareosfd.DebugMessage(
-            100,
-            "create_file() entry point in Python called with %s\n" % (restorepkt),
-        )
+        # bareosfd.DebugMessage(
+        #     100,
+        #     "create_file() entry point in Python called with %s\n" % (restorepkt),
+        # )
         FNAME = restorepkt.ofname
         if not FNAME:
             return bareosfd.bRC_Error
-        dirname = os.path.dirname(FNAME.rstrip("/"))
+        dirname = os.path.dirname(FNAME.rstrip(b"/"))
         if not os.path.exists(dirname):
             bareosfd.DebugMessage(
                 200, "Directory %s does not exist, creating it now\n" % dirname
@@ -218,23 +218,23 @@ class BareosFdPluginLocalFilesBaseclass(BareosFdPluginBaseclass):  # noqa
         file_attr = restorepkt.statp
         self.statp[file_name] = file_attr
 
-        bareosfd.DebugMessage(
-            150,
-            "Set file attributes " + file_name + " with stat " + str(file_attr) + "\n",
-        )
+        # bareosfd.DebugMessage(
+        #     150,
+        #     "Set file attributes " + file_name + " with stat " + str(file_attr) + "\n",
+        # )
         try:
             os.chown(file_name, file_attr.st_uid, file_attr.st_gid)
             os.chmod(file_name, file_attr.st_mode)
             os.utime(file_name, (file_attr.st_atime, file_attr.st_mtime))
             newStat = os.stat(file_name)
-            bareosfd.DebugMessage(
-                150,
-                "Verified file attributes "
-                + file_name
-                + " with stat "
-                + str(newStat)
-                + "\n",
-            )
+            # bareosfd.DebugMessage(
+            #     150,
+            #     "Verified file attributes "
+            #     + file_name
+            #     + " with stat "
+            #     + str(newStat)
+            #     + "\n",
+            # )
 
         except Exception as e:
             bareosfd.JobMessage(
@@ -252,7 +252,7 @@ class BareosFdPluginLocalFilesBaseclass(BareosFdPluginBaseclass):  # noqa
         bareosfd.DebugMessage(
             150,
             "end_restore_file set file attributes "
-            + self.FNAME
+            + self.FNAME.decode('utf-8','ignore')
             + " with stat "
             + str(self.statp[self.FNAME])
             + "\n",
