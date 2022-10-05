@@ -2,7 +2,7 @@
    BAREOS® - Backup Archiving REcovery Open Sourced
 
    Copyright (C) 2013-2014 Planets Communications B.V.
-   Copyright (C) 2013-2021 Bareos GmbH & Co. KG
+   Copyright (C) 2013-2022 Bareos GmbH & Co. KG
 
    This program is Free Software; you can modify it under the terms of
    version three of the GNU Affero General Public License as published by the
@@ -441,7 +441,7 @@ typedef struct {
   int32_t flags;               /* Open flags */
   int32_t mode;                /* Permissions for created files */
   PyObject* buf;               /* Read/Write buffer */
-  const char* fname;           /* Open filename */
+  PyObject* fname;             /* Open filename */
   int32_t status;              /* Return status */
   int32_t io_errno;            /* Errno code */
   int32_t lerror;              /* Win32 error code */
@@ -470,7 +470,7 @@ static PyMemberDef PyIoPacket_members[]
         (char*)"Permissions for created files"},
        {(char*)"buf", T_OBJECT, offsetof(PyIoPacket, buf), 0,
         (char*)"Read/write buffer"},
-       {(char*)"fname", T_STRING, offsetof(PyIoPacket, fname), 0,
+       {(char*)"fname", T_OBJECT, offsetof(PyIoPacket, fname), 0,
         (char*)"Open filename"},
        {(char*)"status", T_INT, offsetof(PyIoPacket, status), 0,
         (char*)"Return status"},

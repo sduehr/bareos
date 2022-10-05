@@ -77,7 +77,7 @@ class BareosFdPluginLocalFilesBaseclass(BareosFdPluginBaseclass):  # noqa
             return bareosfd.bRC_Skip
 
         self.file_to_backup = self.files_to_backup.pop()
-        bareosfd.DebugMessage(100, "file: " + self.file_to_backup + "\n")
+        bareosfd.DebugMessage(100, "file: " + self.file_to_backup.decode('utf8','ignore') + "\n")
 
         mystatp = bareosfd.StatPacket()
         try:
@@ -115,9 +115,9 @@ class BareosFdPluginLocalFilesBaseclass(BareosFdPluginBaseclass):  # noqa
         # os.islink will detect links to directories only when
         # there is no trailing slash - we need to perform checks
         # on the stripped name but use it with trailing / for the backup itself
-        if os.path.islink(self.file_to_backup.rstrip("/")):
+        if os.path.islink(self.file_to_backup.rstrip(b"/")):
             savepkt.type = bareosfd.FT_LNK
-            savepkt.link = os.readlink(self.file_to_backup.rstrip("/"))
+            savepkt.link = os.readlink(self.file_to_backup.rstrip(b"/"))
             bareosfd.DebugMessage(150, "file type is: FT_LNK\n")
         elif os.path.isfile(self.file_to_backup):
             savepkt.type = bareosfd.FT_REG
@@ -163,7 +163,7 @@ class BareosFdPluginLocalFilesBaseclass(BareosFdPluginBaseclass):  # noqa
             )
             os.makedirs(dirname)
         # open creates the file, if not yet existing, we close it again right
-        # aways it will be opened again in plugin_io.
+        # always it will be opened again in plugin_io.
         if restorepkt.type == bareosfd.FT_REG:
             open(FNAME, "wb").close()
             restorepkt.create_status = bareosfd.CF_EXTRACT

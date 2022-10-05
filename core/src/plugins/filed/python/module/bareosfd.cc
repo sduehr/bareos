@@ -1,7 +1,7 @@
 /*
    BAREOS® - Backup Archiving REcovery Open Sourced
 
-   Copyright (C) 2020-2021 Bareos GmbH & Co. KG
+   Copyright (C) 2020-2022 Bareos GmbH & Co. KG
 
    This program is Free Software; you can redistribute it and/or
    modify it under the terms of version three of the GNU Affero General Public
@@ -258,8 +258,8 @@ static inline PySavePacket* NativeToPySavePacket(struct save_pkt* sp)
   PySavePacket* pSavePkt = PyObject_New(PySavePacket, &PySavePacketType);
 
   if (pSavePkt) {
-    pSavePkt->fname = PyUnicode_FromString(sp->fname ? sp->fname : "");
-    pSavePkt->link = PyUnicode_FromString(sp->link ? sp->link : "");
+    pSavePkt->fname = PyBytes_FromString(sp->fname ? sp->fname : "");
+    pSavePkt->link = PyBytes_FromString(sp->link ? sp->link : "");
     if (sp->statp.st_mode) {
       pSavePkt->statp = (PyObject*)NativeToPyStatPacket(&sp->statp);
     } else {
@@ -298,13 +298,11 @@ static inline bool PySavePacketToNative(
        * As this has to linger as long as the backup is running we save it in
        * our plugin context.
        */
-      if (PyUnicode_Check(pSavePkt->fname)) {
+      if (PyBytes_Check(pSavePkt->fname)) {
         if (plugin_priv_ctx->fname) { free(plugin_priv_ctx->fname); }
-
-        const char* fileName_AsUTF8 = PyUnicode_AsUTF8(pSavePkt->fname);
-        if (!fileName_AsUTF8) return false;
-
-        plugin_priv_ctx->fname = strdup(fileName_AsUTF8);
+        /* const char* fileName_AsUTF8 = PyUnicode_AsUTF8(pSavePkt->fname); */
+        /* if (!fileName_AsUTF8) return false; */
+        plugin_priv_ctx->fname = strdup(PyBytes_AsString(pSavePkt->fname));
         sp->fname = plugin_priv_ctx->fname;
       }
     } else {
@@ -317,9 +315,11 @@ static inline bool PySavePacketToNative(
        * As this has to linger as long as the backup is running we save it in
        * our plugin context.
        */
-      if (PyUnicode_Check(pSavePkt->link)) {
+      if (PyBytes_Check(pSavePkt->link)) {
         if (plugin_priv_ctx->link) { free(plugin_priv_ctx->link); }
-        plugin_priv_ctx->link = strdup(PyUnicode_AsUTF8(pSavePkt->link));
+        /* plugin_priv_ctx->link = strdup(PyUnicode_AsUTF8(pSavePkt->link)); */
+        // plugin_priv_ctx->link = strdup(plugin_priv_ctx->link);
+        plugin_priv_ctx->link = strdup(PyBytes_AsString(pSavePkt->link));
         sp->link = plugin_priv_ctx->link;
       }
     }
@@ -516,14 +516,13 @@ static inline PyIoPacket* NativeToPyIoPacket(struct io_pkt* io)
     pIoPkt->count = io->count;
     pIoPkt->flags = io->flags;
     pIoPkt->mode = io->mode;
-    pIoPkt->fname = io->fname;
+    pIoPkt->fname = PyBytes_FromString(io->fname ? io->fname : "");
+
     pIoPkt->whence = io->whence;
     pIoPkt->offset = io->offset;
     if (io->func == IO_WRITE && io->count > 0) {
-      /*
-       * Only initialize the buffer with read data when we are writing and
-       * there is data.
-       */
+      /* Only initialize the buffer with read data when we are writing and
+       * there is data. */
       pIoPkt->buf = PyByteArray_FromStringAndSize(io->buf, io->count);
       if (!pIoPkt->buf) {
         Py_DECREF((PyObject*)pIoPkt);
@@ -532,11 +531,8 @@ static inline PyIoPacket* NativeToPyIoPacket(struct io_pkt* io)
     } else {
       pIoPkt->buf = NULL;
     }
-
-    /*
-     * These must be set by the Python function but we initialize them to zero
-     * to be sure they have some valid setting an not random data.
-     */
+    /* These must be set by the Python function but we initialize them to zero
+     * to be sure they have some valid setting an not random data.  */
     pIoPkt->io_errno = 0;
     pIoPkt->lerror = 0;
     pIoPkt->win32 = false;

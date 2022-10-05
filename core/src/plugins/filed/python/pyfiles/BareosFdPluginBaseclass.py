@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # BAREOS - Backup Archiving REcovery Open Sourced
 #
-# Copyright (C) 2014-2021 Bareos GmbH & Co. KG
+# Copyright (C) 2014-2022 Bareos GmbH & Co. KG
 #
 # This program is Free Software; you can redistribute it and/or
 # modify it under the terms of version three of the GNU Affero General Public
@@ -247,10 +247,10 @@ class BareosFdPluginBaseclass(object):
         We need to capture it on open and keep it for the remaining procedures
         Now (since 2020) separated into sub-methods to ease overloading in derived classes
         """
-        bareosfd.DebugMessage(
-            250,
-            "plugin_io called with function %s filename %s\n" % (IOP.func, IOP.fname),
-        )
+        # bareosfd.DebugMessage(
+        #     250,
+        #     "plugin_io called with function %s filename %s\n" % (IOP.func, IOP.fname.decode('utf-8','ignore')),
+        # )
         bareosfd.DebugMessage(250, "self.FNAME is set to %s\n" % (self.FNAME))
         if IOP.func == IO_OPEN:
             return self.plugin_io_open(IOP)
