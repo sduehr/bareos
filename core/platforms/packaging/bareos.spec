@@ -997,6 +997,7 @@ cmake  .. \
   %if !0%{python2_available}
   -DENABLE_PYTHON2=no \
   %endif
+  -DENABLE_SANITIZERS=yes\
 
 #Add flags
 %__make CFLAGS="$RPM_OPT_FLAGS" CXXFLAGS="$RPM_OPT_FLAGS" %{?_smp_mflags};
