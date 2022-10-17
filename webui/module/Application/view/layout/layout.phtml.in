@@ -154,6 +154,7 @@ include 'version.php';
                </a>
                <ul class="dropdown-menu" role="menu">
                   <li><a href="<?php echo $this->url('console', array('action' => 'index')); ?>" target="_self"><?php echo $this->translate("Console"); ?></a></li>
+                  <li><a href="<?php echo $this->url('subscription', array('action' => 'status')); ?>" target="_blank"><?php echo $this->translate("Status Subscription"); ?></a></li>
                </ul>
             </li>
             <li class="dropdown">

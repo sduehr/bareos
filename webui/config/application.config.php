@@ -39,6 +39,7 @@ $modules = array(
    'Restore',
    'Auth',
    'Console',
+   'Subscription',
    'Analytics'
 );
 
