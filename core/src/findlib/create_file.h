@@ -23,7 +23,7 @@
 
 int CreateFile(JobControlRecord* jcr,
                Attributes* attr,
-               BareosWinFilePacket* ofd,
+               BareosFilePacket* ofd,
                int replace);
 
 #endif  // BAREOS_FINDLIB_CREATE_FILE_H_

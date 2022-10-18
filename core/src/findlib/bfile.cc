@@ -34,17 +34,17 @@
 
 const int debuglevel = 200;
 
-int (*plugin_bopen)(BareosWinFilePacket* bfd,
+int (*plugin_bopen)(BareosFilePacket* bfd,
                     const char* fname,
                     int flags,
                     mode_t mode)
     = NULL;
-int (*plugin_bclose)(BareosWinFilePacket* bfd) = NULL;
-ssize_t (*plugin_bread)(BareosWinFilePacket* bfd, void* buf, size_t count)
+int (*plugin_bclose)(BareosFilePacket* bfd) = NULL;
+ssize_t (*plugin_bread)(BareosFilePacket* bfd, void* buf, size_t count)
     = NULL;
-ssize_t (*plugin_bwrite)(BareosWinFilePacket* bfd, void* buf, size_t count)
+ssize_t (*plugin_bwrite)(BareosFilePacket* bfd, void* buf, size_t count)
     = NULL;
-boffset_t (*plugin_blseek)(BareosWinFilePacket* bfd,
+boffset_t (*plugin_blseek)(BareosFilePacket* bfd,
                            boffset_t offset,
                            int whence)
     = NULL;
@@ -256,7 +256,7 @@ static inline void int32_LE2BE(int32_t* pBE, const int32_t v)
 }
 
 //  Read a BackupRead block and pull out the file data
-bool processWin32BackupAPIBlock(BareosWinFilePacket* bfd,
+bool processWin32BackupAPIBlock(BareosFilePacket* bfd,
                                 void* pBuffer,
                                 ssize_t dwSize)
 {
@@ -374,9 +374,9 @@ bool processWin32BackupAPIBlock(BareosWinFilePacket* bfd,
 extern void unix_name_to_win32(POOLMEM*& win32_name, const char* name);
 extern "C" HANDLE get_osfhandle(int fd);
 
-void binit(BareosWinFilePacket* bfd)
+void binit(BareosFilePacket* bfd)
 {
-  new (bfd) BareosWinFilePacket();
+  new (bfd) BareosFilePacket();
   bfd->fid = -1;
   bfd->use_backup_api = have_win32_api();
 }
@@ -386,20 +386,20 @@ void binit(BareosWinFilePacket* bfd)
  *   Returns 1 if function worked
  *   Returns 0 if failed (i.e. do not have Backup API on this machine)
  */
-bool set_win32_backup(BareosWinFilePacket* bfd)
+bool set_win32_backup(BareosFilePacket* bfd)
 {
   /* We enable if possible here */
   bfd->use_backup_api = have_win32_api();
   return bfd->use_backup_api;
 }
 
-bool SetPortableBackup(BareosWinFilePacket* bfd)
+bool SetPortableBackup(BareosFilePacket* bfd)
 {
   bfd->use_backup_api = false;
   return true;
 }
 
-bool SetCmdPlugin(BareosWinFilePacket* bfd, JobControlRecord* jcr)
+bool SetCmdPlugin(BareosFilePacket* bfd, JobControlRecord* jcr)
 {
   bfd->cmd_plugin = true;
   bfd->jcr = jcr;
@@ -410,7 +410,7 @@ bool SetCmdPlugin(BareosWinFilePacket* bfd, JobControlRecord* jcr)
  * Return 1 if we are NOT using Win32 BackupWrite()
  * return 0 if are
  */
-bool IsPortableBackup(BareosWinFilePacket* bfd) { return !bfd->use_backup_api; }
+bool IsPortableBackup(BareosFilePacket* bfd) { return !bfd->use_backup_api; }
 
 bool have_win32_api() { return p_BackupRead && p_BackupWrite; }
 
@@ -471,7 +471,7 @@ bool IsRestoreStreamSupported(int stream)
   return false;
 }
 
-HANDLE BgetHandle(BareosWinFilePacket* bfd)
+HANDLE BgetHandle(BareosFilePacket* bfd)
 {
   return (bfd->mode == BF_CLOSED) ? INVALID_HANDLE_VALUE : bfd->fh;
 }
@@ -490,7 +490,7 @@ HANDLE BgetHandle(BareosWinFilePacket* bfd)
 #    define OVERWRITE_HIDDEN 4
 #  endif
 
-static inline int BopenEncrypted(BareosWinFilePacket* bfd,
+static inline int BopenEncrypted(BareosFilePacket* bfd,
                                  const char* fname,
                                  int flags,
                                  mode_t mode)
@@ -554,7 +554,7 @@ static inline int BopenEncrypted(BareosWinFilePacket* bfd,
   return bfd->mode == BF_CLOSED ? -1 : 1;
 }
 
-static inline int BopenNonencrypted(BareosWinFilePacket* bfd,
+static inline int BopenNonencrypted(BareosFilePacket* bfd,
                                     const char* fname,
                                     int flags,
                                     mode_t mode)
@@ -728,7 +728,7 @@ static inline int BopenNonencrypted(BareosWinFilePacket* bfd,
   return bfd->mode == BF_CLOSED ? -1 : 1;
 }
 
-int bopen(BareosWinFilePacket* bfd,
+int bopen(BareosFilePacket* bfd,
           const char* fname,
           int flags,
           mode_t mode,
@@ -759,7 +759,7 @@ int bopen(BareosWinFilePacket* bfd,
  * Returns  0 on success
  *         -1 on error
  */
-static inline int BcloseEncrypted(BareosWinFilePacket* bfd)
+static inline int BcloseEncrypted(BareosFilePacket* bfd)
 {
   if (bfd->mode == BF_CLOSED) {
     Dmsg0(50, "=== BFD already closed.\n");
@@ -782,7 +782,7 @@ static inline int BcloseEncrypted(BareosWinFilePacket* bfd)
  * Returns  0 on success
  *         -1 on error
  */
-static inline int BcloseNonencrypted(BareosWinFilePacket* bfd)
+static inline int BcloseNonencrypted(BareosFilePacket* bfd)
 {
   int status = 0;
 
@@ -848,7 +848,7 @@ all_done:
  * Returns  0 on success
  *         -1 on error
  */
-int bclose(BareosWinFilePacket* bfd)
+int bclose(BareosFilePacket* bfd)
 {
   if (bfd->encrypted) {
     return BcloseEncrypted(bfd);
@@ -861,7 +861,7 @@ int bclose(BareosWinFilePacket* bfd)
  *           0         on EOF
  *          -1         on error
  */
-ssize_t bread(BareosWinFilePacket* bfd, void* buf, size_t count)
+ssize_t bread(BareosFilePacket* bfd, void* buf, size_t count)
 {
   bfd->rw_bytes = 0;
 
@@ -889,7 +889,7 @@ ssize_t bread(BareosWinFilePacket* bfd, void* buf, size_t count)
   return (ssize_t)bfd->rw_bytes;
 }
 
-ssize_t bwrite(BareosWinFilePacket* bfd, void* buf, size_t count)
+ssize_t bwrite(BareosFilePacket* bfd, void* buf, size_t count)
 {
   bfd->rw_bytes = 0;
 
@@ -919,9 +919,9 @@ ssize_t bwrite(BareosWinFilePacket* bfd, void* buf, size_t count)
   return (ssize_t)bfd->rw_bytes;
 }
 
-bool IsBopen(BareosWinFilePacket* bfd) { return bfd->mode != BF_CLOSED; }
+bool IsBopen(BareosFilePacket* bfd) { return bfd->mode != BF_CLOSED; }
 
-boffset_t blseek(BareosWinFilePacket* bfd, boffset_t offset, int whence)
+boffset_t blseek(BareosFilePacket* bfd, boffset_t offset, int whence)
 {
   LONG offset_low = (LONG)offset;
   LONG offset_high = (LONG)(offset >> 32);
@@ -948,7 +948,7 @@ boffset_t blseek(BareosWinFilePacket* bfd, boffset_t offset, int whence)
  *
  * ===============================================================
  */
-void binit(BareosWinFilePacket* bfd) { bfd->fid = -1; }
+void binit(BareosFilePacket* bfd) { bfd->fid = -1; }
 
 bool have_win32_api() { return false; /* no can do */ }
 
@@ -957,12 +957,12 @@ bool have_win32_api() { return false; /* no can do */ }
  *   Returns true  if function worked
  *   Returns false if failed (i.e. do not have Backup API on this machine)
  */
-bool set_win32_backup(BareosWinFilePacket* bfd)
+bool set_win32_backup(BareosFilePacket* bfd)
 {
   return false; /* no can do */
 }
 
-bool SetPortableBackup(BareosWinFilePacket* bfd)
+bool SetPortableBackup(BareosFilePacket* bfd)
 {
   return true; /* no problem */
 }
@@ -971,17 +971,17 @@ bool SetPortableBackup(BareosWinFilePacket* bfd)
  * Return true  if we are writing in portable format
  * return false if not
  */
-bool IsPortableBackup(BareosWinFilePacket* bfd)
+bool IsPortableBackup(BareosFilePacket* bfd)
 {
   return true; /* portable by definition */
 }
 
-bool set_prog(BareosWinFilePacket* bfd, char* prog, JobControlRecord* jcr)
+bool set_prog(BareosFilePacket* bfd, char* prog, JobControlRecord* jcr)
 {
   return false;
 }
 
-bool SetCmdPlugin(BareosWinFilePacket* bfd, JobControlRecord* jcr)
+bool SetCmdPlugin(BareosFilePacket* bfd, JobControlRecord* jcr)
 {
   bfd->cmd_plugin = true;
   bfd->jcr = jcr;
@@ -1048,7 +1048,7 @@ bool IsRestoreStreamSupported(int stream)
   return false;
 }
 
-int bopen(BareosWinFilePacket* bfd,
+int bopen(BareosFilePacket* bfd,
           const char* fname,
           int flags,
           mode_t mode,
@@ -1109,7 +1109,7 @@ int bopen(BareosWinFilePacket* bfd,
 
 #  ifdef HAVE_DARWIN_OS
 // Open the resource fork of a file.
-int BopenRsrc(BareosWinFilePacket* bfd,
+int BopenRsrc(BareosFilePacket* bfd,
               const char* fname,
               int flags,
               mode_t mode)
@@ -1125,7 +1125,7 @@ int BopenRsrc(BareosWinFilePacket* bfd,
   return bfd->fid;
 }
 #  else
-int BopenRsrc(BareosWinFilePacket* bfd,
+int BopenRsrc(BareosFilePacket* bfd,
               const char* fname,
               int flags,
               mode_t mode)
@@ -1134,7 +1134,7 @@ int BopenRsrc(BareosWinFilePacket* bfd,
 }
 #  endif
 
-int bclose(BareosWinFilePacket* bfd)
+int bclose(BareosFilePacket* bfd)
 {
   int status;
 
@@ -1166,7 +1166,7 @@ int bclose(BareosWinFilePacket* bfd)
   return status;
 }
 
-ssize_t bread(BareosWinFilePacket* bfd, void* buf, size_t count)
+ssize_t bread(BareosFilePacket* bfd, void* buf, size_t count)
 {
   ssize_t status;
 
@@ -1177,7 +1177,7 @@ ssize_t bread(BareosWinFilePacket* bfd, void* buf, size_t count)
   return status;
 }
 
-ssize_t bwrite(BareosWinFilePacket* bfd, void* buf, size_t count)
+ssize_t bwrite(BareosFilePacket* bfd, void* buf, size_t count)
 {
   ssize_t status;
 
@@ -1189,9 +1189,9 @@ ssize_t bwrite(BareosWinFilePacket* bfd, void* buf, size_t count)
   return status;
 }
 
-bool IsBopen(BareosWinFilePacket* bfd) { return bfd->fid >= 0; }
+bool IsBopen(BareosFilePacket* bfd) { return bfd->fid >= 0; }
 
-boffset_t blseek(BareosWinFilePacket* bfd, boffset_t offset, int whence)
+boffset_t blseek(BareosFilePacket* bfd, boffset_t offset, int whence)
 {
   boffset_t pos;
 

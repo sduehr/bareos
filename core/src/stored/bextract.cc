@@ -61,7 +61,7 @@ static bool RecordCb(DeviceControlRecord* dcr, DeviceRecord* rec);
 
 static Device* dev = NULL;
 static DeviceControlRecord* dcr;
-static BareosWinFilePacket bfd;
+static BareosFilePacket bfd;
 static JobControlRecord* jcr;
 static FindFilesPacket* ff;
 static BootStrapRecord* bsr = NULL;
@@ -452,7 +452,7 @@ static void DoExtract(char* devname)
   return;
 }
 
-static bool StoreData(BareosWinFilePacket* bfd,
+static bool StoreData(BareosFilePacket* bfd,
                       char* data,
                       const int32_t length)
 {

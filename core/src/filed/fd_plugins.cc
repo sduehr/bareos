@@ -41,18 +41,18 @@
 #include "lib/bsock.h"
 
 // Function pointers to be set here (findlib)
-extern int (*plugin_bopen)(BareosWinFilePacket* bfd,
+extern int (*plugin_bopen)(BareosFilePacket* bfd,
                            const char* fname,
                            int flags,
                            mode_t mode);
-extern int (*plugin_bclose)(BareosWinFilePacket* bfd);
-extern ssize_t (*plugin_bread)(BareosWinFilePacket* bfd,
+extern int (*plugin_bclose)(BareosFilePacket* bfd);
+extern ssize_t (*plugin_bread)(BareosFilePacket* bfd,
                                void* buf,
                                size_t count);
-extern ssize_t (*plugin_bwrite)(BareosWinFilePacket* bfd,
+extern ssize_t (*plugin_bwrite)(BareosFilePacket* bfd,
                                 void* buf,
                                 size_t count);
-extern boffset_t (*plugin_blseek)(BareosWinFilePacket* bfd,
+extern boffset_t (*plugin_blseek)(BareosFilePacket* bfd,
                                   boffset_t offset,
                                   int whence);
 
@@ -116,16 +116,16 @@ static bRC bareosClearSeenBitmap(PluginContext* ctx, bool all, char* fname);
 static bRC bareosGetInstanceCount(PluginContext* ctx, int* ret);
 
 // These will be plugged into the global pointer structure for the findlib.
-static int MyPluginBopen(BareosWinFilePacket* bfd,
+static int MyPluginBopen(BareosFilePacket* bfd,
                          const char* fname,
                          int flags,
                          mode_t mode);
-static int MyPluginBclose(BareosWinFilePacket* bfd);
-static ssize_t MyPluginBread(BareosWinFilePacket* bfd, void* buf, size_t count);
-static ssize_t MyPluginBwrite(BareosWinFilePacket* bfd,
+static int MyPluginBclose(BareosFilePacket* bfd);
+static ssize_t MyPluginBread(BareosFilePacket* bfd, void* buf, size_t count);
+static ssize_t MyPluginBwrite(BareosFilePacket* bfd,
                               void* buf,
                               size_t count);
-static boffset_t MyPluginBlseek(BareosWinFilePacket* bfd,
+static boffset_t MyPluginBlseek(BareosFilePacket* bfd,
                                 boffset_t offset,
                                 int whence);
 
@@ -1200,7 +1200,7 @@ bail_out:
  */
 int PluginCreateFile(JobControlRecord* jcr,
                      Attributes* attr,
-                     BareosWinFilePacket* bfd,
+                     BareosFilePacket* bfd,
                      int replace)
 {
   int flags;
@@ -1298,7 +1298,7 @@ int PluginCreateFile(JobControlRecord* jcr,
  */
 bool PluginSetAttributes(JobControlRecord* jcr,
                          Attributes* attr,
-                         BareosWinFilePacket* ofd)
+                         BareosFilePacket* ofd)
 {
   Plugin* plugin;
   struct restore_pkt rp;
@@ -1803,7 +1803,7 @@ void FreePlugins(JobControlRecord* jcr)
  * Entry point for opening the file this is a wrapper around the pluginIO
  * entry point in the plugin.
  */
-static int MyPluginBopen(BareosWinFilePacket* bfd,
+static int MyPluginBopen(BareosFilePacket* bfd,
                          const char* fname,
                          int flags,
                          mode_t mode)
@@ -1844,7 +1844,7 @@ static int MyPluginBopen(BareosWinFilePacket* bfd,
  * Entry point for closing the file this is a wrapper around the pluginIO
  * entry point in the plugin.
  */
-static int MyPluginBclose(BareosWinFilePacket* bfd)
+static int MyPluginBclose(BareosFilePacket* bfd)
 {
   Plugin* plugin;
   struct io_pkt io;
@@ -1879,7 +1879,7 @@ static int MyPluginBclose(BareosWinFilePacket* bfd)
  * Entry point for reading from the file this is a wrapper around the pluginIO
  * entry point in the plugin.
  */
-static ssize_t MyPluginBread(BareosWinFilePacket* bfd, void* buf, size_t count)
+static ssize_t MyPluginBread(BareosFilePacket* bfd, void* buf, size_t count)
 {
   Plugin* plugin;
   struct io_pkt io;
@@ -1915,7 +1915,7 @@ static ssize_t MyPluginBread(BareosWinFilePacket* bfd, void* buf, size_t count)
  * Entry point for writing to the file this is a wrapper around the pluginIO
  * entry point in the plugin.
  */
-static ssize_t MyPluginBwrite(BareosWinFilePacket* bfd, void* buf, size_t count)
+static ssize_t MyPluginBwrite(BareosFilePacket* bfd, void* buf, size_t count)
 {
   Plugin* plugin;
   struct io_pkt io;
@@ -1953,7 +1953,7 @@ static ssize_t MyPluginBwrite(BareosWinFilePacket* bfd, void* buf, size_t count)
  * Entry point for seeking in the file this is a wrapper around the pluginIO
  * entry point in the plugin.
  */
-static boffset_t MyPluginBlseek(BareosWinFilePacket* bfd,
+static boffset_t MyPluginBlseek(BareosFilePacket* bfd,
                                 boffset_t offset,
                                 int whence)
 {

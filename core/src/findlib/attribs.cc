@@ -46,7 +46,7 @@ extern void unix_name_to_win32(POOLMEM*& win32_name, const char* name);
 /* Forward referenced subroutines */
 static bool set_win32_attributes(JobControlRecord* jcr,
                                  Attributes* attr,
-                                 BareosWinFilePacket* ofd);
+                                 BareosFilePacket* ofd);
 void WinError(JobControlRecord* jcr, const char* prefix, POOLMEM* ofile);
 #endif /* HAVE_WIN32 */
 
@@ -188,7 +188,7 @@ int SelectDataStream(FindFilesPacket* ff_pkt, bool compatible)
 // Restore all file attributes like owner, mode and file times.
 static inline bool RestoreFileAttributes(JobControlRecord* jcr,
                                          Attributes* attr,
-                                         BareosWinFilePacket* ofd)
+                                         BareosFilePacket* ofd)
 {
   bool ok = true;
   bool suppress_errors;
@@ -354,7 +354,7 @@ static inline bool RestoreFileAttributes(JobControlRecord* jcr,
  */
 bool SetAttributes(JobControlRecord* jcr,
                    Attributes* attr,
-                   BareosWinFilePacket* ofd)
+                   BareosFilePacket* ofd)
 {
   mode_t old_mask;
   bool ok = true;
@@ -617,7 +617,7 @@ void plug(T& st, uint64_t val)
  */
 static bool set_win32_attributes(JobControlRecord* jcr,
                                  Attributes* attr,
-                                 BareosWinFilePacket* ofd)
+                                 BareosFilePacket* ofd)
 {
   char* p = attr->attrEx;
   int64_t val;
