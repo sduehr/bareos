@@ -3,7 +3,7 @@
 
    Copyright (C) 2003-2010 Free Software Foundation Europe e.V.
    Copyright (C) 2011-2012 Planets Communications B.V.
-   Copyright (C) 2013-2021 Bareos GmbH & Co. KG
+   Copyright (C) 2013-2022 Bareos GmbH & Co. KG
 
    This program is Free Software; you can redistribute it and/or
    modify it under the terms of version three of the GNU Affero General Public
@@ -40,13 +40,9 @@ int (*plugin_bopen)(BareosFilePacket* bfd,
                     mode_t mode)
     = NULL;
 int (*plugin_bclose)(BareosFilePacket* bfd) = NULL;
-ssize_t (*plugin_bread)(BareosFilePacket* bfd, void* buf, size_t count)
-    = NULL;
-ssize_t (*plugin_bwrite)(BareosFilePacket* bfd, void* buf, size_t count)
-    = NULL;
-boffset_t (*plugin_blseek)(BareosFilePacket* bfd,
-                           boffset_t offset,
-                           int whence)
+ssize_t (*plugin_bread)(BareosFilePacket* bfd, void* buf, size_t count) = NULL;
+ssize_t (*plugin_bwrite)(BareosFilePacket* bfd, void* buf, size_t count) = NULL;
+boffset_t (*plugin_blseek)(BareosFilePacket* bfd, boffset_t offset, int whence)
     = NULL;
 
 #ifdef HAVE_DARWIN_OS
@@ -377,7 +373,7 @@ extern "C" HANDLE get_osfhandle(int fd);
 void binit(BareosFilePacket* bfd)
 {
   new (bfd) BareosFilePacket();
-  bfd->fid = -1;
+  bfd->filedes = -1;
   bfd->use_backup_api = have_win32_api();
 }
 
@@ -948,7 +944,7 @@ boffset_t blseek(BareosFilePacket* bfd, boffset_t offset, int whence)
  *
  * ===============================================================
  */
-void binit(BareosFilePacket* bfd) { bfd->fid = -1; }
+void binit(BareosFilePacket* bfd) { bfd->filedes = -1; }
 
 bool have_win32_api() { return false; /* no can do */ }
 
@@ -957,15 +953,9 @@ bool have_win32_api() { return false; /* no can do */ }
  *   Returns true  if function worked
  *   Returns false if failed (i.e. do not have Backup API on this machine)
  */
-bool set_win32_backup(BareosFilePacket* bfd)
-{
-  return false; /* no can do */
-}
+bool set_win32_backup(BareosFilePacket* bfd) { return false; /* no can do */ }
 
-bool SetPortableBackup(BareosFilePacket* bfd)
-{
-  return true; /* no problem */
-}
+bool SetPortableBackup(BareosFilePacket* bfd) { return true; /* no problem */ }
 
 /**
  * Return true  if we are writing in portable format
@@ -1059,37 +1049,37 @@ int bopen(BareosFilePacket* bfd,
 
   if (bfd->cmd_plugin && plugin_bopen) {
     Dmsg1(400, "call plugin_bopen fname=%s\n", fname);
-    bfd->fid = plugin_bopen(bfd, fname, flags, mode);
-    Dmsg1(400, "Plugin bopen stat=%d\n", bfd->fid);
-    return bfd->fid;
+    bfd->filedes = plugin_bopen(bfd, fname, flags, mode);
+    Dmsg1(400, "Plugin bopen stat=%d\n", bfd->filedes);
+    return bfd->filedes;
   }
 
   /* Normal file open */
   Dmsg1(debuglevel, "open file %s\n", fname);
 
   /* We use fnctl to set O_NOATIME if requested to avoid open error */
-  bfd->fid = open(fname, flags & ~O_NOATIME, mode);
+  bfd->filedes = open(fname, flags & ~O_NOATIME, mode);
 
   /* Set O_NOATIME if possible */
-  if (bfd->fid != -1 && flags & O_NOATIME) {
-    int oldflags = fcntl(bfd->fid, F_GETFL, 0);
+  if (bfd->filedes != -1 && flags & O_NOATIME) {
+    int oldflags = fcntl(bfd->filedes, F_GETFL, 0);
     if (oldflags == -1) {
       bfd->BErrNo = errno;
-      close(bfd->fid);
-      bfd->fid = -1;
+      close(bfd->filedes);
+      bfd->filedes = -1;
     } else {
-      int ret = fcntl(bfd->fid, F_SETFL, oldflags | O_NOATIME);
+      int ret = fcntl(bfd->filedes, F_SETFL, oldflags | O_NOATIME);
       /* EPERM means setting O_NOATIME was not allowed  */
       if (ret == -1 && errno != EPERM) {
         bfd->BErrNo = errno;
-        close(bfd->fid);
-        bfd->fid = -1;
+        close(bfd->filedes);
+        bfd->filedes = -1;
       }
     }
   }
   bfd->BErrNo = errno;
   bfd->flags_ = flags;
-  Dmsg1(400, "Open file %d\n", bfd->fid);
+  Dmsg1(400, "Open file %d\n", bfd->filedes);
   errno = bfd->BErrNo;
 
   bfd->win32Decomplugin_private_context.bIsInData = false;
@@ -1097,22 +1087,19 @@ int bopen(BareosFilePacket* bfd,
 
 #  if defined(HAVE_POSIX_FADVISE) && defined(POSIX_FADV_WILLNEED)
   /* If not RDWR or WRONLY must be Read Only */
-  if (bfd->fid != -1 && !(flags & (O_RDWR | O_WRONLY))) {
-    int status = posix_fadvise(bfd->fid, 0, 0, POSIX_FADV_WILLNEED);
-    Dmsg3(400, "Did posix_fadvise WILLNEED on %s fid=%d status=%d\n", fname,
-          bfd->fid, status);
+  if (bfd->filedes != -1 && !(flags & (O_RDWR | O_WRONLY))) {
+    int status = posix_fadvise(bfd->filedes, 0, 0, POSIX_FADV_WILLNEED);
+    Dmsg3(400, "Did posix_fadvise WILLNEED on %s filedes=%d status=%d\n", fname,
+          bfd->filedes, status);
   }
 #  endif
 
-  return bfd->fid;
+  return bfd->filedes;
 }
 
 #  ifdef HAVE_DARWIN_OS
 // Open the resource fork of a file.
-int BopenRsrc(BareosFilePacket* bfd,
-              const char* fname,
-              int flags,
-              mode_t mode)
+int BopenRsrc(BareosFilePacket* bfd, const char* fname, int flags, mode_t mode)
 {
   POOLMEM* rsrc_fname;
 
@@ -1122,13 +1109,10 @@ int BopenRsrc(BareosFilePacket* bfd,
   bopen(bfd, rsrc_fname, flags, mode, 0);
   FreePoolMemory(rsrc_fname);
 
-  return bfd->fid;
+  return bfd->filedes;
 }
 #  else
-int BopenRsrc(BareosFilePacket* bfd,
-              const char* fname,
-              int flags,
-              mode_t mode)
+int BopenRsrc(BareosFilePacket* bfd, const char* fname, int flags, mode_t mode)
 {
   return -1;
 }
@@ -1138,28 +1122,28 @@ int bclose(BareosFilePacket* bfd)
 {
   int status;
 
-  if (bfd->fid == -1) { return 0; }
+  if (bfd->filedes == -1) { return 0; }
 
-  Dmsg1(400, "Close file %d\n", bfd->fid);
+  Dmsg1(400, "Close file %d\n", bfd->filedes);
 
   if (bfd->cmd_plugin && plugin_bclose) {
     status = plugin_bclose(bfd);
-    bfd->fid = -1;
+    bfd->filedes = -1;
     bfd->cmd_plugin = false;
   } else {
 #  if defined(HAVE_POSIX_FADVISE) && defined(POSIX_FADV_DONTNEED)
     /* If not RDWR or WRONLY must be Read Only */
     if (!(bfd->flags_ & (O_RDWR | O_WRONLY))) {
       /* Tell OS we don't need it any more */
-      posix_fadvise(bfd->fid, 0, 0, POSIX_FADV_DONTNEED);
-      Dmsg1(400, "Did posix_fadvise DONTNEED on fid=%d\n", bfd->fid);
+      posix_fadvise(bfd->filedes, 0, 0, POSIX_FADV_DONTNEED);
+      Dmsg1(400, "Did posix_fadvise DONTNEED on filedes=%d\n", bfd->filedes);
     }
 #  endif
 
     /* Close normal file */
-    status = close(bfd->fid);
+    status = close(bfd->filedes);
     bfd->BErrNo = errno;
-    bfd->fid = -1;
+    bfd->filedes = -1;
     bfd->cmd_plugin = false;
   }
 
@@ -1172,7 +1156,7 @@ ssize_t bread(BareosFilePacket* bfd, void* buf, size_t count)
 
   if (bfd->cmd_plugin && plugin_bread) { return plugin_bread(bfd, buf, count); }
 
-  status = read(bfd->fid, buf, count);
+  status = read(bfd->filedes, buf, count);
   bfd->BErrNo = errno;
   return status;
 }
@@ -1184,12 +1168,12 @@ ssize_t bwrite(BareosFilePacket* bfd, void* buf, size_t count)
   if (bfd->cmd_plugin && plugin_bwrite) {
     return plugin_bwrite(bfd, buf, count);
   }
-  status = write(bfd->fid, buf, count);
+  status = write(bfd->filedes, buf, count);
   bfd->BErrNo = errno;
   return status;
 }
 
-bool IsBopen(BareosFilePacket* bfd) { return bfd->fid >= 0; }
+bool IsBopen(BareosFilePacket* bfd) { return bfd->filedes >= 0; }
 
 boffset_t blseek(BareosFilePacket* bfd, boffset_t offset, int whence)
 {
@@ -1198,7 +1182,7 @@ boffset_t blseek(BareosFilePacket* bfd, boffset_t offset, int whence)
   if (bfd->cmd_plugin && plugin_bwrite) {
     return plugin_blseek(bfd, offset, whence);
   }
-  pos = (boffset_t)lseek(bfd->fid, offset, whence);
+  pos = (boffset_t)lseek(bfd->filedes, offset, whence);
   bfd->BErrNo = errno;
   return pos;
 }

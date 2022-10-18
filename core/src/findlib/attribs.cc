@@ -2,7 +2,7 @@
    BAREOS® - Backup Archiving REcovery Open Sourced
 
    Copyright (C) 2002-2011 Free Software Foundation Europe e.V.
-   Copyright (C) 2016-2019 Bareos GmbH & Co. KG
+   Copyright (C) 2016-2022 Bareos GmbH & Co. KG
 
    This program is Free Software; you can redistribute it and/or
    modify it under the terms of version three of the GNU Affero General Public
@@ -206,7 +206,7 @@ static inline bool RestoreFileAttributes(JobControlRecord* jcr,
   // Restore owner and group.
 #ifdef HAVE_FCHOWN
   if (file_is_open) {
-    if (fchown(ofd->fid, attr->statp.st_uid, attr->statp.st_gid) < 0
+    if (fchown(ofd->filedes, attr->statp.st_uid, attr->statp.st_gid) < 0
         && !suppress_errors) {
       BErrNo be;
 
@@ -231,7 +231,7 @@ static inline bool RestoreFileAttributes(JobControlRecord* jcr,
   // Restore filemode.
 #ifdef HAVE_FCHMOD
   if (file_is_open) {
-    if (fchmod(ofd->fid, attr->statp.st_mode) < 0 && !suppress_errors) {
+    if (fchmod(ofd->filedes, attr->statp.st_mode) < 0 && !suppress_errors) {
       BErrNo be;
 
       Jmsg2(jcr, M_ERROR, 0, _("Unable to set file modes %s: ERR=%s\n"),
@@ -266,7 +266,7 @@ static inline bool RestoreFileAttributes(JobControlRecord* jcr,
     restore_times[1].tv_sec = attr->statp.st_mtime;
     restore_times[1].tv_usec = 0;
 
-    if (futimes(ofd->fid, restore_times) < 0 && !suppress_errors) {
+    if (futimes(ofd->filedes, restore_times) < 0 && !suppress_errors) {
       BErrNo be;
 
       Jmsg2(jcr, M_ERROR, 0, _("Unable to set file times %s: ERR=%s\n"),
@@ -283,7 +283,7 @@ static inline bool RestoreFileAttributes(JobControlRecord* jcr,
     restore_times[1].tv_sec = attr->statp.st_mtime;
     restore_times[1].tv_nsec = 0;
 
-    if (futimens(ofd->fid, restore_times) < 0 && !suppress_errors) {
+    if (futimens(ofd->filedes, restore_times) < 0 && !suppress_errors) {
       BErrNo be;
 
       Jmsg2(jcr, M_ERROR, 0, _("Unable to set file times %s: ERR=%s\n"),
@@ -599,11 +599,7 @@ int encode_attribsEx(JobControlRecord* jcr,
 #    define plug(st, val) st = (typeof st)val
 #  else
 // Use templates to do the casting
-template <class T>
-void plug(T& st, uint64_t val)
-{
-  st = static_cast<T>(val);
-}
+template <class T> void plug(T& st, uint64_t val) { st = static_cast<T>(val); }
 #  endif
 
 /**
@@ -628,7 +624,8 @@ static bool set_win32_attributes(JobControlRecord* jcr,
   if (!(p_SetFileAttributesW || p_SetFileAttributesA)) { return false; }
 
   if (!p || !*p) { /* we should have attributes */
-    Dmsg2(100, "Attributes missing. of=%s ofd=%d\n", attr->ofname, ofd->fid);
+    Dmsg2(100, "Attributes missing. of=%s ofd=%d\n", attr->ofname,
+          ofd->filedes);
     if (IsBopen(ofd)) { bclose(ofd); }
     return false;
   } else {

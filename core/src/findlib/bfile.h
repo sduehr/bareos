@@ -3,7 +3,7 @@
 
    Copyright (C) 2003-2010 Free Software Foundation Europe e.V.
    Copyright (C) 2011-2012 Planets Communications B.V.
-   Copyright (C) 2013-2021 Bareos GmbH & Co. KG
+   Copyright (C) 2013-2022 Bareos GmbH & Co. KG
 
    This program is Free Software; you can redistribute it and/or
    modify it under the terms of version three of the GNU Affero General Public
@@ -76,7 +76,7 @@ struct BareosFilePacket {
   bool encrypted = false;           /**< set if using ReadEncryptedFileRaw/WriteEncryptedFileRaw */
   int mode = BF_CLOSED;             /**< set if file is open */
   HANDLE fh = INVALID_HANDLE_VALUE; /**< Win32 file handle */
-  int fid = 0;                      /**< fd if doing Unix style */
+  int filedes = 0;                  /**< fd if doing Unix style */
   LPVOID lplugin_private_context = nullptr;       /**< BackupRead/Write context */
   PVOID pvContext = nullptr;        /**< Encryption context */
   POOLMEM* errmsg = nullptr;        /**< error message buffer */
@@ -107,7 +107,7 @@ HANDLE BgetHandle(BareosFilePacket* bfd);
 /* Basic Unix low level I/O file packet */
 /* clang-format off */
 struct BareosFilePacket {
-  int fid{0};                     /**< file id on Unix */
+  int filedes{0};                 /**< filedescriptor on Unix */
   int flags_{0};                  /**< open flags */
   int BErrNo{0};                  /**< errno */
   int32_t lerror{0};              /**< not used - simplies Win32 builds */
@@ -137,10 +137,7 @@ int bopen(BareosFilePacket* bfd,
           int flags,
           mode_t mode,
           dev_t rdev);
-int BopenRsrc(BareosFilePacket* bfd,
-              const char* fname,
-              int flags,
-              mode_t mode);
+int BopenRsrc(BareosFilePacket* bfd, const char* fname, int flags, mode_t mode);
 int bclose(BareosFilePacket* bfd);
 ssize_t bread(BareosFilePacket* bfd, void* buf, size_t count);
 ssize_t bwrite(BareosFilePacket* bfd, void* buf, size_t count);
