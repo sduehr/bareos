@@ -3,7 +3,7 @@
 
    Copyright (C) 2007-2012 Free Software Foundation Europe e.V.
    Copyright (C) 2011-2012 Planets Communications B.V.
-   Copyright (C) 2013-2021 Bareos GmbH & Co. KG
+   Copyright (C) 2013-2022 Bareos GmbH & Co. KG
 
    This program is Free Software; you can redistribute it and/or
    modify it under the terms of version three of the GNU Affero General Public
@@ -46,12 +46,8 @@ extern int (*plugin_bopen)(BareosFilePacket* bfd,
                            int flags,
                            mode_t mode);
 extern int (*plugin_bclose)(BareosFilePacket* bfd);
-extern ssize_t (*plugin_bread)(BareosFilePacket* bfd,
-                               void* buf,
-                               size_t count);
-extern ssize_t (*plugin_bwrite)(BareosFilePacket* bfd,
-                                void* buf,
-                                size_t count);
+extern ssize_t (*plugin_bread)(BareosFilePacket* bfd, void* buf, size_t count);
+extern ssize_t (*plugin_bwrite)(BareosFilePacket* bfd, void* buf, size_t count);
 extern boffset_t (*plugin_blseek)(BareosFilePacket* bfd,
                                   boffset_t offset,
                                   int whence);
@@ -122,9 +118,7 @@ static int MyPluginBopen(BareosFilePacket* bfd,
                          mode_t mode);
 static int MyPluginBclose(BareosFilePacket* bfd);
 static ssize_t MyPluginBread(BareosFilePacket* bfd, void* buf, size_t count);
-static ssize_t MyPluginBwrite(BareosFilePacket* bfd,
-                              void* buf,
-                              size_t count);
+static ssize_t MyPluginBwrite(BareosFilePacket* bfd, void* buf, size_t count);
 static boffset_t MyPluginBlseek(BareosFilePacket* bfd,
                                 boffset_t offset,
                                 int whence);
@@ -1233,6 +1227,7 @@ int PluginCreateFile(JobControlRecord* jcr,
   rp.RegexWhere = jcr->RegexWhere;
   rp.replace = jcr->impl->replace;
   rp.create_status = CF_ERROR;
+  rp.filedes = -1;
 
   Dmsg4(debuglevel,
         "call plugin createFile stream=%d type=%d LinkFI=%d File=%s\n",
@@ -1254,6 +1249,7 @@ int PluginCreateFile(JobControlRecord* jcr,
     return CF_ERROR;
   }
 
+  bfd->filedes = rp.filedes;
   switch (rp.create_status) {
     case CF_ERROR:
       Qmsg1(jcr, M_ERROR, 0,
@@ -1334,6 +1330,7 @@ bool PluginSetAttributes(JobControlRecord* jcr,
     if (IsBopen(ofd)) { bclose(ofd); }
     PmStrcpy(attr->ofname, "*None*");
   }
+  rp.filedes = -1;
 
   return true;
 }
@@ -1799,10 +1796,8 @@ void FreePlugins(JobControlRecord* jcr)
   jcr->plugin_ctx_list = NULL;
 }
 
-/**
- * Entry point for opening the file this is a wrapper around the pluginIO
- * entry point in the plugin.
- */
+/** Entry point for opening the file this is a wrapper around
+    the pluginIO entry point in the plugin.  */
 static int MyPluginBopen(BareosFilePacket* bfd,
                          const char* fname,
                          int flags,
@@ -1819,6 +1814,7 @@ static int MyPluginBopen(BareosFilePacket* bfd,
   memset(&io, 0, sizeof(io));
   io.pkt_size = sizeof(io);
   io.pkt_end = sizeof(io);
+  io.filedes = -1;
 
   io.func = IO_OPEN;
   io.fname = fname;
@@ -1834,10 +1830,39 @@ static int MyPluginBopen(BareosFilePacket* bfd,
     errno = io.io_errno;
     bfd->lerror = io.lerror;
   }
+  //  The plugin has two options for the read/write:
+  //  1.: - Set io.do_io_in_core to true, and
+  //      - Set the io.filedes to the filedescriptor of the file that was
+  //        opened in the plugin. In this case the core code will read from
+  //        write to that filedescriptor during backup and restore.
+  //  2.: - Set io.do_io_in_core to false , and
+  //      - Set/leave the io.filedes on/to -1. In this case the plugin code
+  //        itself will be called for every read/write during backup and
+  //        restore.
 
-  Dmsg1(debuglevel, "Return from plugin open status=%d\n", io.status);
-
-  return io.status;
+  bfd->do_io_in_core = io.do_io_in_core;
+  bfd->filedes = io.filedes;
+  if (bfd->do_io_in_core) {
+    if (io.filedes != -1) {
+      Dmsg1(
+          debuglevel,
+          "bopen: plugin asks for core to do the read/write via filedescriptor "
+          "%d\n",
+          io.filedes);
+      return io.filedes;
+    } else {
+      Dmsg1(debuglevel,
+            "bopen: ERROR: plugin wants to do read/write itself but did not "
+            "return a valid filedescriptor: %d\n",
+            io.filedes);
+      return -2;
+    }
+  } else {
+    Dmsg1(debuglevel,
+          "bopen: plugin wants to do read/write itself. status: %d\n",
+          io.status);
+    return io.status;
+  }
 }
 
 /**
@@ -1857,6 +1882,7 @@ static int MyPluginBclose(BareosFilePacket* bfd)
   memset(&io, 0, sizeof(io));
   io.pkt_size = sizeof(io);
   io.pkt_end = sizeof(io);
+  io.filedes = -1;
 
   io.func = IO_CLOSE;
 
@@ -1871,7 +1897,7 @@ static int MyPluginBclose(BareosFilePacket* bfd)
   }
 
   Dmsg1(debuglevel, "plugin_bclose stat=%d\n", io.status);
-
+  bfd->filedes = -1;
   return io.status;
 }
 
@@ -1892,6 +1918,7 @@ static ssize_t MyPluginBread(BareosFilePacket* bfd, void* buf, size_t count)
   memset(&io, 0, sizeof(io));
   io.pkt_size = sizeof(io);
   io.pkt_end = sizeof(io);
+  io.filedes = -1;
 
   io.func = IO_READ;
   io.count = count;

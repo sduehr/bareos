@@ -3,7 +3,7 @@
 
    Copyright (C) 2000-2012 Free Software Foundation Europe e.V.
    Copyright (C) 2011-2012 Planets Communications B.V.
-   Copyright (C) 2013-2021 Bareos GmbH & Co. KG
+   Copyright (C) 2013-2022 Bareos GmbH & Co. KG
 
    This program is Free Software; you can redistribute it and/or
    modify it under the terms of version three of the GNU Affero General Public
@@ -566,13 +566,11 @@ void DoRestore(JobControlRecord* jcr)
 
         BuildAttrOutputFnames(jcr, attr);
 
-        /*
-         * Try to actually create the file, which returns a status telling
-         * us if we need to extract or not.
-         */
+        /* Try to actually create the file, which returns a status telling
+         * us if we need to extract or not.  */
         jcr->impl->num_files_examined++;
         rctx.extract = false;
-        status = CF_CORE; /* By default, let Bareos's core handle it */
+        status = CF_CORE; /* By default, let Bareos' core handle it */
 
         if (jcr->IsPlugin()) {
           status = PluginCreateFile(jcr, attr, &rctx.bfd, jcr->impl->replace);
@@ -606,10 +604,8 @@ void DoRestore(JobControlRecord* jcr)
               FromBase64(&rsrc_len, attr->attrEx);
               if (attr->type == FT_REG && rsrc_len > 0) { rctx.extract = true; }
 
-              /*
-               * Do not count the resource forks as regular files being
-               * restored.
-               */
+              /* Do not count the resource forks as regular files being
+               * restored.  */
               if (rsrc_len == 0) { jcr->JobFiles++; }
             } else {
               jcr->JobFiles++;
@@ -1293,10 +1289,8 @@ bail_out:
 // If extracting, close any previous stream
 static bool ClosePreviousStream(JobControlRecord* jcr, r_ctx& rctx)
 {
-  /*
-   * If extracting, it was from previous stream, so
-   * close the output file and validate the signature.
-   */
+  /* If extracting, it was from previous stream, so
+   * close the output file and validate the signature.  */
   if (rctx.extract) {
     if (rctx.size > 0 && !IsBopen(&rctx.bfd)) {
       Jmsg0(rctx.jcr, M_ERROR, 0,

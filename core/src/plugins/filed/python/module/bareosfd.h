@@ -2,7 +2,7 @@
    BAREOS® - Backup Archiving REcovery Open Sourced
 
    Copyright (C) 2013-2014 Planets Communications B.V.
-   Copyright (C) 2013-2021 Bareos GmbH & Co. KG
+   Copyright (C) 2013-2022 Bareos GmbH & Co. KG
 
    This program is Free Software; you can modify it under the terms of
    version three of the GNU Affero General Public License as published by the
@@ -351,6 +351,7 @@ typedef struct {
   const char* RegexWhere;       /* Regex where */
   int replace;                  /* Replace flag */
   int create_status;            /* Status from createFile() */
+  int filedes;                  /* filedescriptor for read/write in core */
 } PyRestorePacket;
 
 // Forward declarations of type specific functions.
@@ -392,6 +393,8 @@ static PyMemberDef PyRestorePacket_members[] = {
      (char*)"Replace flag"},
     {(char*)"create_status", T_INT, offsetof(PyRestorePacket, create_status), 0,
      (char*)"Status from createFile()"},
+    {(char*)"filedes", T_INT, offsetof(PyRestorePacket, filedes), 0,
+     (char*)"file descriptor of current file"},
     {NULL}};
 
 static PyTypeObject PyRestorePacketType = {
@@ -448,6 +451,8 @@ typedef struct {
   int32_t whence;              /* Lseek argument */
   int64_t offset;              /* Lseek argument */
   bool win32;                  /* Win32 GetLastError returned */
+  int filedes;                 /* filedescriptor for read/write in core */
+  bool do_io_in_core;          /* do i/o (read/write) in core, not in plugin */
 } PyIoPacket;
 
 // Forward declarations of type specific functions.
@@ -484,6 +489,10 @@ static PyMemberDef PyIoPacket_members[]
         (char*)"Lseek argument"},
        {(char*)"win32", T_BOOL, offsetof(PyIoPacket, win32), 0,
         (char*)"Win32 GetLastError returned"},
+       {(char*)"filedes", T_INT, offsetof(PyIoPacket, filedes), 0,
+        (char*)"file descriptor of current file"},
+       {(char*)"do_io_in_core", T_BOOL, offsetof(PyIoPacket, do_io_in_core), 0,
+        (char*)"set to true if i/o (read/write) should be done in core"},
        {NULL}};
 
 static PyTypeObject PyIoPacketType = {
