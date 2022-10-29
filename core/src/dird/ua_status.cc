@@ -482,11 +482,9 @@ static bool show_scheduled_preview(UaContext* ua,
  */
 static bool DoSubscriptionStatus(UaContext* ua)
 {
-  if (!ua->AclAccessOk(Command_ACL, "configure")
-      && (ua->AclHasRestrictions(Client_ACL) || ua->AclHasRestrictions(Job_ACL)
-          || ua->AclHasRestrictions(FileSet_ACL))) {
-    ua->ErrorMsg(_("%s %s: is an invalid command or needs access right to the"
-                   " \"configure\" command or access right to all client, job"
+  if (ua->AclHasRestrictions(Client_ACL) || ua->AclHasRestrictions(Job_ACL)
+          || ua->AclHasRestrictions(FileSet_ACL)) {
+    ua->ErrorMsg(_("%s %s: needs access to all client, job"
                    " and fileset resources.\n"),
                  ua->argk[0], ua->argk[1]);
     return false;
