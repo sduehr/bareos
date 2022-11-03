@@ -32,7 +32,7 @@ void CryptoSessionEnd(JobControlRecord* jcr);
 bool CryptoSessionSend(JobControlRecord* jcr, BareosSocket* sd);
 bool VerifySignature(JobControlRecord* jcr, r_ctx& rctx);
 bool FlushCipher(JobControlRecord* jcr,
-                 BareosWinFilePacket* bfd,
+                 BareosFilePacket* bfd,
                  uint64_t* addr,
                  char* flags,
                  int32_t stream,

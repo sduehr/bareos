@@ -31,7 +31,7 @@ bool win32_onefs_is_disabled(findFILESET* fileset);
 void win32_cleanup_copy_thread(JobControlRecord* jcr);
 void win32_flush_copy_thread(JobControlRecord* jcr);
 int win32_send_to_copy_thread(JobControlRecord* jcr,
-                              BareosWinFilePacket* bfd,
+                              BareosFilePacket* bfd,
                               char* data,
                               const int32_t length);
 
