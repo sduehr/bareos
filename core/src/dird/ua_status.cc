@@ -514,6 +514,13 @@ static bool DoSubscriptionStatus(UaContext* ua)
   }
 
   if (kw_all || kw_detail) {
+    ua->send->ObjectKeyValue(
+        "version", "Bareos version: ", kBareosVersionStrings.Full, "%s");
+    ua->send->ObjectKeyValue("os", kBareosVersionStrings.GetOsInfo(),
+                             " (%s)\n");
+    char now[30] = {0};
+    bstrftime(now, sizeof(now), (utime_t)time(NULL), "%F %T");
+    ua->send->ObjectKeyValue("date", "Date: ", now, "%s\n");
     ua->SendMsg(_("\nDetailed backup unit report:\n"));
     ua->db->ListSqlQuery(
         ua->jcr,
