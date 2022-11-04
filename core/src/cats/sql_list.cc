@@ -70,8 +70,10 @@ bool BareosDb::ListSqlQuery(JobControlRecord* jcr,
   DbLocker _{this};
 
   if (!SqlQuery(query, QF_STORE_RESULT)) {
-    Mmsg(errmsg, _("Query failed: %s\n"), sql_strerror());
-    if (verbose) { sendit->Decoration(errmsg); }
+    if (verbose) {
+      Mmsg(errmsg, _("Query failed: %s\n"), sql_strerror());
+      sendit->Decoration(errmsg);
+    }
     return false;
   }
 
@@ -92,6 +94,51 @@ bool BareosDb::ListSqlQuery(JobControlRecord* jcr,
 {
   return ListSqlQuery(jcr, get_predefined_query(query), sendit, type,
                       description, verbose);
+}
+
+bool BareosDb::ListOneRowSqlQuery(JobControlRecord* jcr,
+                                  const char* query,
+                                  OutputFormatter* sendit,
+                                  e_list_type type,
+                                  const char* description,
+                                  bool verbose)
+{
+  DbLocker _{this};
+
+  if (!SqlQuery(query, QF_STORE_RESULT)) {
+    if (verbose) {
+      Mmsg(errmsg, _("Query failed: %s\n"), sql_strerror());
+      sendit->Decoration(errmsg);
+    }
+    return false;
+  }
+
+  if (SqlNumRows() > 1) {
+    if (verbose) {
+      Mmsg(errmsg, _("Query returned %d rows. Only one row expected.\n"),
+           SqlNumRows());
+      sendit->Decoration(errmsg);
+    }
+    return false;
+  }
+
+  sendit->ObjectStart(description);
+  ListResult(jcr, sendit, type);
+  sendit->ObjectEnd(description);
+  SqlFreeResult();
+
+  return true;
+}
+
+bool BareosDb::ListOneRowSqlQuery(JobControlRecord* jcr,
+                                  SQL_QUERY query,
+                                  OutputFormatter* sendit,
+                                  e_list_type type,
+                                  const char* description,
+                                  bool verbose)
+{
+  return ListOneRowSqlQuery(jcr, get_predefined_query(query), sendit, type,
+                            description, verbose);
 }
 
 void BareosDb::ListPoolRecords(JobControlRecord* jcr,

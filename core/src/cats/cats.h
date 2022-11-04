@@ -866,6 +866,20 @@ class BareosDb : public BareosDbQueryEnum {
                     e_list_type type,
                     const char* description,
                     bool verbose);
+
+  bool ListOneRowSqlQuery(JobControlRecord* jcr,
+                          const char* query,
+                          OutputFormatter* sendit,
+                          e_list_type type,
+                          const char* description,
+                          bool verbose = false);
+  bool ListOneRowSqlQuery(JobControlRecord* jcr,
+                          SQL_QUERY query,
+                          OutputFormatter* sendit,
+                          e_list_type type,
+                          const char* description,
+                          bool verbose);
+
   void ListClientRecords(JobControlRecord* jcr,
                          char* clientname,
                          OutputFormatter* sendit,
