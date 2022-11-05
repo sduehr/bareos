@@ -188,7 +188,7 @@ int SelectDataStream(FindFilesPacket* ff_pkt, bool compatible)
 // Restore all file attributes like owner, mode and file times.
 static inline bool RestoreFileAttributes(JobControlRecord* jcr,
                                          Attributes* attr,
-                                         BareosFilePacket* ofd)
+                                         [[maybe_unused]] BareosFilePacket* ofd)
 {
   bool ok = true;
   bool suppress_errors;
