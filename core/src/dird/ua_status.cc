@@ -477,6 +477,24 @@ static bool show_scheduled_preview(UaContext* ua,
   return true;
 }
 
+std::string get_subscription_status_signature_source_text(UaContext* ua,
+                                                          const char* timestamp)
+{
+  std::string salt("SECRETSALT");
+  PoolMem subscriptions(PM_MESSAGE);
+  PoolMem query(PM_MESSAGE);
+  OutputFormatter output_text
+      = OutputFormatter(pm_append, (void*)&subscriptions, nullptr, nullptr);
+  ua->db->FillQuery(
+      query, BareosDb::SQL_QUERY::subscription_select_backup_unit_total_1,
+      me->subscriptions);
+  ua->db->ListSqlQuery(ua->jcr, query.c_str(), &output_text, VERT_LIST, false);
+  std::string signature_source
+      = salt + "\n" + timestamp + "\n" + subscriptions.c_str();
+  Dmsg1(500, "status_subscription summary=%s\n", signature_source.c_str());
+  return signature_source;
+}
+
 /**
  * Check the number of clients in the DB against the configured number of
  * subscriptions
@@ -513,13 +531,14 @@ static bool DoSubscriptionStatus(UaContext* ua)
     return false;
   }
 
+  char now[30] = {0};
+  bstrftime(now, sizeof(now), (utime_t)time(NULL), "%F %T");
+
   if (kw_all || kw_detail) {
     ua->send->ObjectKeyValue(
         "version", "Bareos version: ", kBareosVersionStrings.Full, "%s");
     ua->send->ObjectKeyValue("os", kBareosVersionStrings.GetOsInfo(),
                              " (%s)\n");
-    char now[30] = {0};
-    bstrftime(now, sizeof(now), (utime_t)time(NULL), "%F %T");
     ua->send->ObjectKeyValue("date", "Date: ", now, "%s\n");
     ua->SendMsg(_("\nDetailed backup unit report:\n"));
     ua->db->ListSqlQuery(
@@ -534,7 +553,11 @@ static bool DoSubscriptionStatus(UaContext* ua)
         query, BareosDb::SQL_QUERY::subscription_select_backup_unit_total_1,
         me->subscriptions);
     ua->db->ListOneRowSqlQuery(ua->jcr, query.c_str(), ua->send, VERT_LIST,
-                          "total-units-required", true);
+                               "total-units-required", true);
+    std::string signature_source
+        = get_subscription_status_signature_source_text(ua, now);
+    std::string hash = compute_hash(signature_source.c_str());
+    ua->send->ObjectKeyValue("signature", "Signature: ", hash.c_str(), "%s\n");
   }
   if (kw_all || kw_unknown) {
     ua->SendMsg(
