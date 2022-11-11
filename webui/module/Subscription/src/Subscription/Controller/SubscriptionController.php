@@ -101,10 +101,10 @@ class SubscriptionController extends AbstractActionController
 
         $response = $this->getResponse();
         $response->getHeaders()->addHeaderLine('Content-Type', 'application/json');
-        $response->getHeaders()->addHeaderLine('Content-Disposition', 'attachment; filename="status_subscription_all.json"');
+        $response->getHeaders()->addHeaderLine('Content-Disposition', 'attachment; filename="bareos-subscriptions.json"');
 
         if(isset($result)) {
-            $response->setContent(JSON::encode($result));
+            $response->setContent(JSON::prettyPrint(JSON::encode($result)));
         }
 
         return $response;
