@@ -508,7 +508,6 @@ static inline PyIoPacket* NativeToPyIoPacket(struct io_pkt* io)
     pIoPkt->whence = io->whence;
     pIoPkt->offset = io->offset;
     pIoPkt->filedes = io->filedes;
-    pIoPkt->do_io_in_core = io->do_io_in_core;
 
     if (io->func == IO_WRITE && io->count > 0) {
       /* Only initialize the buffer with read data when we are writing and
@@ -540,7 +539,6 @@ static inline bool PyIoPacketToNative(PyIoPacket* pIoPkt, struct io_pkt* io)
   io->win32 = pIoPkt->win32;
   io->status = pIoPkt->status;
   io->filedes = pIoPkt->filedes;
-  io->do_io_in_core = pIoPkt->do_io_in_core;
 
   if (io->func == IO_READ && io->status > 0) {
     // Only copy back the data when doing a read and there is data.
