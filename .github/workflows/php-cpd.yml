@@ -4,6 +4,10 @@ jobs:
   PHP-CPD:
     runs-on: ubuntu-latest
     steps:
+      - name: "Checkout source"
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Run PHP cpd
         uses: StephaneBour/actions-php-cpd@1.0
         with:
