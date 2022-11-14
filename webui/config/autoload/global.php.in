@@ -249,6 +249,19 @@ function read_directors_ini($directors, $directors_ini)
 
 }
 
+function get_logger()
+{
+    $writer = new Zend\Log\Writer\Stream('php://stderr');
+    $format = '%timestamp% %priorityName%: %message%';
+    $formatter = new Zend\Log\Formatter\Simple($format);
+    $writer->setFormatter($formatter);
+    $logger = new Zend\Log\Logger();
+    $logger->addWriter($writer);
+
+    return $logger;
+}
+
+
 return array(
    'directors' => read_directors_ini($directors, $directors_ini),
    'configuration' => read_configuration_ini($configuration, $configuration_ini),
@@ -281,4 +294,5 @@ return array(
        'Zend\Session\Validator\HttpUserAgent',
    ),
     ),
+    'logger' => get_logger(),
 );
