@@ -2131,11 +2131,11 @@ static PyObject* PyIoPacket_repr(PyIoPacket* self)
   Mmsg(buf,
        "IoPacket(func=%d, count=%ld, flags=%ld, mode=%04o, "
        "buf=\"%s\", fname=\"%s\", status=%ld, io_errno=%ld, lerror=%ld, "
-       "whence=%ld, offset=%lld, win32=%d, filedes=%d, do_io_in_core=%d)",
+       "whence=%ld, offset=%lld, win32=%d, filedes=%d)",
        self->func, self->count, self->flags, (self->mode & ~S_IFMT),
        PyGetByteArrayValue(self->buf), self->fname, self->status,
        self->io_errno, self->lerror, self->whence, self->offset, self->win32,
-       self->filedes, self->do_io_in_core);
+       self->filedes);
   s = PyUnicode_FromString(buf.c_str());
 
   return s;
@@ -2144,12 +2144,13 @@ static PyObject* PyIoPacket_repr(PyIoPacket* self)
 // Initialization.
 static int PyIoPacket_init(PyIoPacket* self, PyObject* args, PyObject* kwds)
 {
-  static char* kwlist[]
-      = {(char*)"func",    (char*)"count",         (char*)"flags",
-         (char*)"mode",    (char*)"buf",           (char*)"fname",
-         (char*)"status",  (char*)"io_errno",      (char*)"lerror",
-         (char*)"whence",  (char*)"offset",        (char*)"win32",
-         (char*)"filedes", (char*)"do_io_in_core", NULL};
+  static char* kwlist[] = {(char*)"func",    (char*)"count",
+                           (char*)"flags",   (char*)"mode",
+                           (char*)"buf",     (char*)"fname",
+                           (char*)"status",  (char*)"io_errno",
+                           (char*)"lerror",  (char*)"whence",
+                           (char*)"offset",  (char*)"win32",
+                           (char*)"filedes", NULL};
 
   self->func = 0;
   self->count = 0;
@@ -2164,13 +2165,12 @@ static int PyIoPacket_init(PyIoPacket* self, PyObject* args, PyObject* kwds)
   self->offset = 0;
   self->win32 = false;
   self->filedes = -1;
-  self->do_io_in_core = false;
 
   if (!PyArg_ParseTupleAndKeywords(
-          args, kwds, "|Hiiiosiiiilcic", kwlist, &self->func, &self->count,
+          args, kwds, "|Hiiiosiiiilci", kwlist, &self->func, &self->count,
           &self->flags, &self->mode, &self->buf, &self->fname, &self->status,
           &self->io_errno, &self->lerror, &self->whence, &self->offset,
-          &self->win32, &self->filedes, &self->do_io_in_core)) {
+          &self->win32, &self->filedes)) {
     return -1;
   }
 
