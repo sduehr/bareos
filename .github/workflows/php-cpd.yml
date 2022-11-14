@@ -2,6 +2,7 @@ name: PHP Copy Paste Detector
 on: [push]
 jobs:
   PHP-CPD:
+    runs-on: ubuntu-latest
     steps:
       - name: Run PHP cpd
         uses: StephaneBour/actions-php-cpd@1.0
