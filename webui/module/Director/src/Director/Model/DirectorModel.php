@@ -5,7 +5,7 @@
  * bareos-webui - Bareos Web-Frontend
  *
  * @link      https://github.com/bareos/bareos for the canonical source repository
- * @copyright Copyright (C) 2013-2019 Bareos GmbH & Co. KG (http://www.bareos.org/)
+ * @copyright Copyright (C) 2013-2022 Bareos GmbH & Co. KG (http://www.bareos.org/)
  * @license   GNU Affero General Public License (http://www.gnu.org/licenses/)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -84,6 +84,22 @@ class DirectorModel
       else {
          throw new \Exception('Missing argument.');
       }
+   }
+
+   /**
+    * Get Director status subscription
+    *
+    * @param $bsock
+    *
+    * @return string
+    */
+   public function getDirectorStatusSubscription(&$bsock=null)
+   {
+      if(!isset($bsock)) {
+         throw new \Exception('Missing argument.');
+      }
+      $result = $bsock->send_command("status subscription detail", 0);
+      return $result;
    }
 
    /**

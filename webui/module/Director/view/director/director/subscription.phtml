@@ -5,9 +5,8 @@
  * bareos-webui - Bareos Web-Frontend
  *
  * @link      https://github.com/bareos/bareos for the canonical source repository
- * @copyright Copyright (C) 2013-2022 Bareos GmbH & Co. KG (http://www.bareos.org/)
+ * @copyright Copyright (c) 2022-2022 Bareos GmbH & Co. KG (http://www.bareos.org/)
  * @license   GNU Affero General Public License (http://www.gnu.org/licenses/)
- * @author    Frank Bergkemper
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -30,13 +29,20 @@ echo $this->render('_header.phtml');
 <?php if(!$this->acl_alert) : ?>
 
 <div class="panel-heading">
-   <h3 class="panel-title"><?php echo $this->translate("Director Status"); ?></h3>
+   <h3 class="panel-title"><?php echo $this->translate("Subscription Status"); ?></h3>
+</div>
+
+<div>
+<a href=https://www.bareos.com/product/subscription/  target="_blank">Get information about the Bareos Subscription model.</a>
+</div>
+<div>
+<a href=/subscription/status>Download your Bareos Subscription status (JSON).</a>
 </div>
 
 <div class="panel-body">
 <pre class="dird-messages" style="height: 500px; font-size: 8pt;">
 <code>
-<?php echo $this->directorOutput; ?>
+<?php echo $this->escapeHtml($this->directorOutput); ?>
 </code>
 </pre>
 </div>

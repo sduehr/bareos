@@ -5,7 +5,7 @@
  * bareos-webui - Bareos Web-Frontend
  *
  * @link      https://github.com/bareos/bareos for the canonical source repository
- * @copyright Copyright (c) 2013-2019 Bareos GmbH & Co. KG (http://www.bareos.org/)
+ * @copyright Copyright (C) 2013-2022 Bareos GmbH & Co. KG (http://www.bareos.org/)
  * @license   GNU Affero General Public License (http://www.gnu.org/licenses/)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,28 +23,12 @@
  *
  */
 
-$title = $this->translate('Director');
-$this->headTitle($title);
-
+echo $this->render('_header.phtml');
 ?>
 
-<ul class="nav nav-tabs">
-   <li><a href="<?php echo $this->url('director', array('action'=>'index')); ?>"><?php echo $this->translate('Status'); ?></a></li>
-   <li class="active"><a href="<?php echo $this->url('director', array('action'=>'messages')); ?>"><?php echo $this->translate('Messages'); ?></a></li>
-</ul>
-
-<br />
-
-<?php if($this->acl_alert) : echo $this->ACLAlert($this->invalid_commands); elseif(!$this->acl_alert) : ?>
-
-<div class="row">
-<div class="col-md-8">
+<?php if(!$this->acl_alert) : ?>
 
 <div class="text-right"><a class="btn btn-primary" onclick="refreshMessages();" /><span class="glyphicon glyphicon-refresh">&nbsp;</span><?php echo $this->translate("Refresh"); ?></a></div>
-
-<br />
-
-<div class="panel panel-default">
 
 <div class="panel-heading">
    <h3 class="panel-title"><?php echo $this->translate("Director messages"); ?></h3>
@@ -55,9 +39,9 @@ $this->headTitle($title);
    </pre>
 </div>
 
-</div>
-</div>
-</div>
+<?php
+echo $this->render('_footer.phtml');
+?>
 
 <script>
 

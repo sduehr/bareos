@@ -5,9 +5,8 @@
  * bareos-webui - Bareos Web-Frontend
  *
  * @link      https://github.com/bareos/bareos for the canonical source repository
- * @copyright Copyright (C) 2013-2022 Bareos GmbH & Co. KG (http://www.bareos.org/)
+ * @copyright Copyright (c) 2022-2022 Bareos GmbH & Co. KG (http://www.bareos.org/)
  * @license   GNU Affero General Public License (http://www.gnu.org/licenses/)
- * @author    Frank Bergkemper
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
@@ -23,26 +22,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-
-echo $this->render('_header.phtml');
+ 
+$title = _('Director');
+$this->headTitle($title);
 ?>
 
-<?php if(!$this->acl_alert) : ?>
+<ul class="nav nav-tabs">
+   <li><a href="<?php echo $this->url('director', array('action'=>'index')); ?>"><?php echo $this->translate('Status'); ?></a></li>
+   <li><a href="<?php echo $this->url('director', array('action'=>'subscription')); ?>"><?php echo $this->translate('Subscription'); ?></a></li>   
+   <li><a href="<?php echo $this->url('director', array('action'=>'messages')); ?>"><?php echo $this->translate('Messages'); ?></a></li>
+</ul>
 
-<div class="panel-heading">
-   <h3 class="panel-title"><?php echo $this->translate("Director Status"); ?></h3>
-</div>
+<br />
 
-<div class="panel-body">
-<pre class="dird-messages" style="height: 500px; font-size: 8pt;">
-<code>
-<?php echo $this->directorOutput; ?>
-</code>
-</pre>
-</div>
+<?php if($this->acl_alert) : echo $this->ACLAlert($this->invalid_commands); else : ?>
 
-<?php
-echo $this->render('_footer.phtml');
-?>
+<div class="row">
+<div class="col-md-8">
+
+<div class="panel panel-default">
 
 <?php endif; ?>
