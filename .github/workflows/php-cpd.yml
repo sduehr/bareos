@@ -1,5 +1,9 @@
 name: PHP Copy Paste Detector
 on: [push]
-uses: StephaneBour/actions-php-cpd@1.0
-with:
-  dir: './webui'
+jobs:
+  PHP-CPD:
+    steps:
+      - name: Run PHP cpd
+        uses: StephaneBour/actions-php-cpd@1.0
+        with:
+          dir: './webui'
