@@ -268,7 +268,9 @@ static void DoAllStatus(UaContext* ua)
   /* Count Storage items */
   LockRes(my_config);
   i = 0;
-  foreach_res (store, R_STORAGE) { i++; }
+  foreach_res (store, R_STORAGE) {
+    i++;
+  }
   unique_store = (StorageResource**)malloc(i * sizeof(StorageResource));
   /* Find Unique Storage address/port */
   i = 0;
@@ -301,7 +303,9 @@ static void DoAllStatus(UaContext* ua)
   /* Count Client items */
   LockRes(my_config);
   i = 0;
-  foreach_res (client, R_CLIENT) { i++; }
+  foreach_res (client, R_CLIENT) {
+    i++;
+  }
   unique_client = (ClientResource**)malloc(i * sizeof(ClientResource));
   /* Find Unique Client address/port */
   i = 0;
@@ -483,7 +487,7 @@ static bool show_scheduled_preview(UaContext* ua,
 static bool DoSubscriptionStatus(UaContext* ua)
 {
   if (ua->AclHasRestrictions(Client_ACL) || ua->AclHasRestrictions(Job_ACL)
-          || ua->AclHasRestrictions(FileSet_ACL)) {
+      || ua->AclHasRestrictions(FileSet_ACL)) {
     ua->ErrorMsg(_("%s %s: needs access to all client, job"
                    " and fileset resources.\n"),
                  ua->argk[0], ua->argk[1]);
@@ -511,44 +515,36 @@ static bool DoSubscriptionStatus(UaContext* ua)
 
   if (kw_all || kw_detail) {
     ua->SendMsg(_("\nDetailed backup unit report:\n"));
-    ua->send->ObjectStart("unit-detail");
     ua->db->ListSqlQuery(
         ua->jcr,
         BareosDb::SQL_QUERY::subscription_select_backup_unit_overview_0,
-        ua->send, HORZ_LIST, true);
-    ua->send->ObjectEnd("unit-detail");
+        ua->send, HORZ_LIST, "unit-detail", true);
   }
   if (kw_all || kw_detail || !kw_unknown) {
     ua->SendMsg(_("\nBackup unit totals:\n"));
-    ua->send->ObjectStart("total-units-required");
-
     PoolMem query(PM_MESSAGE);
     ua->db->FillQuery(
         query, BareosDb::SQL_QUERY::subscription_select_backup_unit_total_1,
         me->subscriptions);
-    ua->db->ListSqlQuery(ua->jcr, query.c_str(), ua->send, VERT_LIST, true);
-    ua->send->ObjectEnd("total-units-required");
+    ua->db->ListOneRowSqlQuery(ua->jcr, query.c_str(), ua->send, VERT_LIST,
+                          "total-units-required", true);
   }
   if (kw_all || kw_unknown) {
     ua->SendMsg(
         _("\nClients/Filesets that cannot be categorized for backup units "
           "yet:\n"));
-    ua->send->ObjectStart("filesets-not-catogorized");
     ua->db->ListSqlQuery(
         ua->jcr,
         BareosDb::SQL_QUERY::subscription_select_unclassified_client_fileset_0,
-        ua->send, HORZ_LIST, true);
-    ua->send->ObjectEnd("filesets-not-catogorized");
+        ua->send, HORZ_LIST, "filesets-not-catogorized", true);
 
     ua->SendMsg(
         _("\nAmount of data that cannot be categorized for backup units "
           "yet:\n"));
-    ua->send->ObjectStart("data-not-categorized");
-    ua->db->ListSqlQuery(
+    ua->db->ListOneRowSqlQuery(
         ua->jcr,
         BareosDb::SQL_QUERY::subscription_select_unclassified_amount_data_0,
-        ua->send, VERT_LIST, true);
-    ua->send->ObjectEnd("data-not-categorized");
+        ua->send, VERT_LIST, "data-not-categorized", true);
   }
   return true;
 }
@@ -913,7 +909,9 @@ static void ListScheduledJobs(UaContext* ua)
     }
   } /* end for loop over resources */
   UnlockRes(my_config);
-  foreach_dlist (sp, sched) { PrtRuntime(ua, sp); }
+  foreach_dlist (sp, sched) {
+    PrtRuntime(ua, sp);
+  }
   if (num_jobs == 0 && !ua->api) { ua->SendMsg(_("No Scheduled Jobs.\n")); }
   if (!ua->api) ua->SendMsg("====\n");
   Dmsg0(200, "Leave list_sched_jobs_runs()\n");
